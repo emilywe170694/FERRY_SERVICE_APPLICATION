@@ -2,7 +2,7 @@ import csv
 import random
 import pandas as pd
 from shapely.geometry import Polygon, Point
-from Ferry_Application_.helper import google_maps_operations
+from helper import google_maps_operations
 import path
 
 # CONSTANTS
