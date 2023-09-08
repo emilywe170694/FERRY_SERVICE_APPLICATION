@@ -24,6 +24,7 @@ NEW_MATRIX_USED_STATIONS    = root + '/data/output/_4_tmatrix_used_stations.csv'
 
 NUMBER_OF_STATIONS_RIGHT_SIDE = 17
 NUMBER_OF_STATIONS_LEFT_SIDE  = 17
+PSEUDO_DEPOT                  = [34]
 BIKING_VELOCITY_IN_METER      = 15000
 
 # CREATE TIME MATRIX FROM PROVIDED DISTANCE MATRIX
@@ -40,14 +41,12 @@ wt_MAX_WAITING_TIME    = 4
 
 #  MODEL PARAMETERS
 d_SERVICE_TIMES         = 1
-K_VEHICLE_SIZE          = 3
+K_VEHICLE_SIZE          = 10
 Q_CAPACITY              = 10
 q_LOAD_PER_REQUEST      = 1
 PENALTY_FACTOR          = 10
 TK_MAX_RT_VEHICLE       = 500  # max ride-time p    er vehicle
 L_MAX_RT_PASSENGER      = 100   # max ride-time per passenger
-
-
 
 
 
