@@ -5,10 +5,10 @@ import pandas as pd
 from scipy.spatial.distance import cdist
 import path
 
-pseudo_depot        = [34]
+pseudo_depot        = path.PSEUDO_DEPOT
 parameter           = path.read_parameter()
 pickup_stations     = path.read_column('pickup_station', path.FINAL_PAX_REQUESTS)
-dropoff_stations       = path.read_column('dropoff_station', path.FINAL_PAX_REQUESTS)
+dropoff_stations    = path.read_column('dropoff_station', path.FINAL_PAX_REQUESTS)
 
 conventional_times  = path.read_column('conventional_t (in min)', path.FINAL_PAX_REQUESTS)
 time_to_pickup      = path.read_column('time_to_pickup', path.FINAL_PAX_REQUESTS)
@@ -35,27 +35,41 @@ def resultingTimeToCsv(route, time):
     #request_df.to_csv(resultingTimes, index=False, header=False)
     return time_sorted
 
+def sorted_delay(route, delay):
+    t = {}
+    for n in range(len(route)):
+        ro = dict(zip(route[n], delay[n]))
+        t.update(ro)
+    sort = dict(sorted(t.items()))
+    delay_sorted = []
+    for e in sort:
+        delay_sorted.append(sort[e])
+
+    request_df = pd.DataFrame(delay_sorted)
+    #request_df.to_csv(resultingTimes, index=False, header=False)
+    return delay_sorted
 
 
-def log_gurobi_results(timetable_array, P, D):
-    pickup_time = []
-    dropout_time = []
+
+def log_times(timetable_array, delay, P, D):
+    pickup_time     = []
+    dropout_time    = []
+    delayed_arrival = []
     for e in P:
         pickup_time.append(timetable_array[e])
-    #pd_pickup = pd.DataFrame(pickup_time, columns=['pickup_time'])
 
     for f in D:
         dropout_time.append(timetable_array[f])
-    #pd_dropout = pd.DataFrame(dropout_time, columns=['dropout_time'])
+        delayed_arrival.append(delay[f])
 
-    params      = path.read_parameter()
     vehicles    = path.K_VEHICLE_SIZE
-    kn          = [vehicles] * len(D)
+    kn          = [vehicles] * len(P)
     kdf         = pd.DataFrame(kn, columns=['#vehicles'])
 
     request_file                    = pd.read_csv(path.FINAL_PAX_REQUESTS)
     request_file['dropout_time']    = dropout_time
     request_file['pickup_time']     = pickup_time
+    request_file['delay']           = delayed_arrival
     request_file['#vehicles']       = kdf
 
     request_file.to_csv(path.PAX_REQUESTS_WITH_ROUTING, index=False)
@@ -77,7 +91,7 @@ def get_latest_arrival_conventional_benchmark(c, d): # c = conventional_arrival,
     lTW_drop = [i - j for i,j in zip(c, d)]
     return lTW_drop
 
-#TODO zwei arrays in einer methode - gibt es verbesserte möglichkeit?
+
 def generate_eTW_V_var_1():
     # generate time-windows
     """
@@ -182,30 +196,8 @@ def run():
     t_ij = generate_corresponding_matrix(path.TIME_MATRIX, V_ACTUAL)
     dist_ij = generate_corresponding_matrix(path.DISTANCE_MATRIX, V_ACTUAL)
 
-    print("\nn = ", n)
-    print("\ne_i = ", E_TW)
-    print("l_i = ", L_TW)
-    print('\n** nodes in model **')
-    print("P = ", P)
-    print("D = ", D)
-    print("V = ", V)
-
-    print('\n** actual stations **')
-    print("Pickup Stations = ", pickup_stations)
-    print("Delivery Stations = ", dropoff_stations)
-    print("V = ", V_ACTUAL)
-    print("\n# Ferries = ", len(K))
-    print("Capacity per Ferry", Q)
-    print("L = ", L)
-    print("Penalty_Factor =  ", P_F)
-
-    data = {'e_i': E_TW, 'l_i': L_TW}
-    df = pd.DataFrame(data)
-    print(df)
 
     # STEP 5: OPTIMIZATION MODEL
-
-
 
     model = gp.Model("AF-DARP")
 
@@ -293,8 +285,9 @@ def run():
 
 
     if model.status == gp.GRB.OPTIMAL:
+        print('START')
         model.printAttr('X')
-
+        print('END')
         first_depot     = V[0]
         second_depot    = V[-1]
 
@@ -308,14 +301,20 @@ def run():
         used_seats      = []
         used_seats_per_ferry = []
 
+        delay_per_ferry = []
+        delay_dvar = []
 
         for k in K:
             for i in V:
                 if i != second_depot and x[first_depot, i, k].x > 0.9:
                     aux = [first_depot, V[i]]
                     times_per_ferry = [u[0, k].X, u[i, k].X]
+                    #todo hier ist was falsch, das erste w hat immer die maximale Q
                     used_seats_per_ferry = [w[0, k].X, w[i, k].X]
-
+                    try:
+                        delay_per_ferry = [0, dvar[i, k].X]
+                    except:
+                        delay_per_ferry = [0, 0]
                     # transferred to actual stations
                     aux2 = [V_ACTUAL[0], V_ACTUAL[i]]
                     while i != second_depot:  # loopt solange bis Fahrzeug zurück am Depot ist
@@ -326,23 +325,31 @@ def run():
                                 aux2.append(V_ACTUAL[h])
                                 times_per_ferry.append(u[h, k].X)
                                 used_seats_per_ferry.append(w[h, k].X)
+                                try:
+                                    delay_per_ferry.append(dvar[h, k].X)
+                                except:
+                                    delay_per_ferry.append(int(0))
                                 i = h
+
                     route_new_v.append(aux)
                     routes_stations.append(aux2)
                     truck.append(k)
                     timetable.append(times_per_ferry)
                     used_seats.append(used_seats_per_ferry)
+                    delay_dvar.append(delay_per_ferry)
 
         print('\nRoute per Vehicle (in nodes):', route_new_v)
         print('Route per Vehicle (in stations):', routes_stations)
         print('Time table: ', timetable)
-        print('Required capacity', used_seats)
+        print('Required capacity (used seats): ', used_seats)
+        print('DELAY: ', delay_dvar)
 
         print("\nn = ", n)
         print("\ne_i = ", E_TW)
         print("l_i = ", L_TW)
 
         timetable_sorted = resultingTimeToCsv(route_new_v, timetable)
+
         data = {'e_i': E_TW, 'l_i': L_TW, 'timetable': timetable_sorted}
         df = pd.DataFrame(data)
         print(df)
@@ -366,7 +373,9 @@ def run():
         print('-----------')
 
 
-        log_gurobi_results(timetable_sorted, P, D)
+        delay_sorted = sorted_delay(route_new_v, delay_dvar)
+        log_times(timetable_sorted, delay_sorted, P, D)
+
 
         #f_arr = get_f_arrival(timetable_sorted, D, t_from_station)
         #add_arrival_times_to_csv(conventional_arrival, f_arr)
@@ -379,9 +388,6 @@ def run():
         #infeasible_runs += 1
         #update_feasibility('INFEASIBLE')
         print('ROUTING WITH ', len(K), ' VEHICLES NOT SOLVABLE ')
-
-
-
 
 
 
