@@ -1,13 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="DataSourceManagerImpl" format="xml" multifile-model="true">
-    <data-source source="LOCAL" name="identifier.sqlite" uuid="74b5cef0-97f5-4992-b069-c422c2028f59">
+    <data-source source="LOCAL" name="FERRY_SERVICE_DB" uuid="74b5cef0-97f5-4992-b069-c422c2028f59">
+    <data-source source="LOCAL" name="FERRY_SERVICE_DB [2]" uuid="5b8fb500-c4f6-4218-8f14-c0e25c25a5d0">
       <driver-ref>sqlite.xerial</driver-ref>
       <synchronize>true</synchronize>
-      <remarks>afrs</remarks>
       <jdbc-driver>org.sqlite.JDBC</jdbc-driver>
-      <jdbc-url>jdbc:sqlite:identifier.sqlite</jdbc-url>
+      <jdbc-url>jdbc:sqlite:$PROJECT_DIR$/FERRY_SERVICE_DB</jdbc-url>
       <working-dir>$ProjectFileDir$</working-dir>
+      <libraries>
+        <library>
+          <url>file://$APPLICATION_CONFIG_DIR$/jdbc-drivers/Xerial SQLiteJDBC/3.40.1/org/xerial/sqlite-jdbc/3.40.1.0/sqlite-jdbc-3.40.1.0.jar</url>
+        </library>
+      </libraries>
     </data-source>
   </component>
 </project>
