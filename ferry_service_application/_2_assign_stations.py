@@ -7,7 +7,7 @@ from matplotlib import pyplot as plt
 from scipy.spatial import distance
 import numpy as np
 from shapely.geometry import Point, Polygon
-import path
+import config
 
 FERRY_VELOCITY = 3.33
 
@@ -41,10 +41,10 @@ def get_polygone(path):
 
 
 def concat_assigned_stations_to_requests_csv(results_df):
-    initial_requests    = pd.read_csv(path.INITIAL_PAX_REQUESTS)
+    initial_requests    = pd.read_csv(config.INITIAL_PAX_REQUESTS)
     assigned_requests   = pd.concat([initial_requests, results_df], axis=1)
-    assigned_requests.to_csv(path.ASSIGNED_PAX_REQUESTS_TEST, index=None)
-    print('**** assigned requests written to ', path.ASSIGNED_PAX_REQUESTS)
+    assigned_requests.to_csv(config.ASSIGNED_PAX_REQUESTS_TEST, index=None)
+    print('**** assigned requests written to ', config.ASSIGNED_PAX_REQUESTS)
 
 def assign_stations(requests):
     """
@@ -76,11 +76,11 @@ def assign_stations(requests):
     """
 
 
-    stations_left  = get_stations(path.STATIONS_COORD_LEFT)
-    stations_right = get_stations(path.STATIONS_COORD_RIGHT)
+    stations_left  = get_stations(config.STATIONS_COORD_LEFT)
+    stations_right = get_stations(config.STATIONS_COORD_RIGHT)
 
-    poly_left  = Polygon(get_polygone(path.DEMAND_POLYGON_LEFT))
-    poly_right = Polygon(get_polygone(path.DEMAND_POLYGON_RIGHT))
+    poly_left  = Polygon(get_polygone(config.DEMAND_POLYGON_LEFT))
+    poly_right = Polygon(get_polygone(config.DEMAND_POLYGON_RIGHT))
 
     results = []
 
@@ -95,13 +95,13 @@ def assign_stations(requests):
 
             # stations separated into two lists (stations_left / stations_right) - index of stations needs to be adapted.
             add_pickup          = 0
-            add_dropoff         = path.NUMBER_OF_STATIONS_LEFT_SIDE
+            add_dropoff         = config.NUMBER_OF_STATIONS_LEFT_SIDE
 
         elif Point(start).within(poly_right):
             # assign pickup station
             available_pickup    = stations_right
             available_dropoff   = stations_left
-            add_pickup          = path.NUMBER_OF_STATIONS_RIGHT_SIDE
+            add_pickup          = config.NUMBER_OF_STATIONS_RIGHT_SIDE
             add_dropoff         = 0
 
         # # TODO : TRY DIFFERENT ASSIGNMENTS!
@@ -146,9 +146,9 @@ def assign_stations(requests):
 
         # todo: subroutes. hier erfolgt die Auswertung
         distance_to_pickup = round(GD(start, assigned_pickup_coord).meters, 2)
-        time_to_pickup = int((distance_to_pickup / path.BIKING_VELOCITY_IN_METER) * 60)
+        time_to_pickup = int((distance_to_pickup / config.BIKING_VELOCITY_IN_METER) * 60)
         distance_from_dropoff = round(GD(destination, assigned_dropoff_coord).meters, 2)
-        time_from_dropoff = int((distance_from_dropoff / path.BIKING_VELOCITY_IN_METER) * 60)  # time = distance/velocity
+        time_from_dropoff = int((distance_from_dropoff / config.BIKING_VELOCITY_IN_METER) * 60)  # time = distance/velocity
 
         """
         The minimum ferry time is the travel time required when traveling by ferry without any waiting times or stops.
@@ -158,7 +158,7 @@ def assign_stations(requests):
             + (assigned dropoff-station to destination)
             = min. ferry time
         """
-        min_ferry_time = time_to_pickup + time_from_dropoff + path.TIME_MATRIX[pickup_station][dropoff_station]
+        min_ferry_time = time_to_pickup + time_from_dropoff + config.TIME_MATRIX[pickup_station][dropoff_station] + config.d_SERVICE_TIMES
 
         results.append([pickup_station, dropoff_station, assigned_pickup_coord, assigned_dropoff_coord,
                         distance_to_pickup, distance_from_dropoff, time_to_pickup, time_from_dropoff, min_ferry_time])
@@ -174,7 +174,7 @@ def requests_to_dataframe(results):
 
 
 def run():
-    initial_requests        = get_initial_requests(path.INITIAL_PAX_REQUESTS)
+    initial_requests        = get_initial_requests(config.INITIAL_PAX_REQUESTS)
     assigned_requests       = assign_stations(initial_requests)  # 2.  weißt jedem Request stationen zu: r = [[1,4], [6,3]..]
     assigned_requests_df    = requests_to_dataframe(assigned_requests)
     concat_assigned_stations_to_requests_csv(assigned_requests_df)

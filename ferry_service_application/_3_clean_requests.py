@@ -1,5 +1,5 @@
 import pandas as pd
-import path
+import config
 import _1_generate_demand
 import _2_assign_stations
 import random
@@ -9,7 +9,7 @@ CLEANED_REQUESTS = "/Users/emilyjlw/PycharmProjects/DARP05/Application3/Data/out
 PARAMS = '/Users/emilyjlw/PycharmProjects/DARP05/Application3/Data/input/Parameter.csv'
 
 # 12 km/h = 3.33 meter/second
-parameter = path.read_parameter()
+parameter = config.read_parameter()
 
 def read_column(file, column_name):
     result = []
@@ -20,11 +20,11 @@ def read_column(file, column_name):
     return result
 
 def get_conventional_time():
-    times = read_column(path.ASSIGNED_PAX_REQUESTS, 'conventional_t (in min)')
+    times = read_column(config.ASSIGNED_PAX_REQUESTS, 'conventional_t (in min)')
     return times
 
 def get_min_ferry_time():
-    times = read_column(path.ASSIGNED_PAX_REQUESTS, 'min_ferry_time')
+    times = read_column(config.ASSIGNED_PAX_REQUESTS, 'min_ferry_time')
     return times
 
 def identify_dispensable_requests(con, ferry):
@@ -55,23 +55,23 @@ def reject_dispensable_requests(index_to_drop):
     :param index_to_drop: Array of indices that are to be droppen from request csv = [1,2,3..]
     :return: 
     """
-    requests_df                 = pd.read_csv(path.ASSIGNED_PAX_REQUESTS)
+    requests_df                 = pd.read_csv(config.ASSIGNED_PAX_REQUESTS)
     accepted_requests_df        = pd.DataFrame(requests_df.drop(index_to_drop))
     number_of_accepted_requests = len(accepted_requests_df.index)
 
-    if number_of_accepted_requests < path.n_NUMBER_OF_PASSENGERS:
+    if number_of_accepted_requests < config.n_NUMBER_OF_PASSENGERS:
         new_requests_df = replace_rejected_requests(amount=len(index_to_drop))
         final_df = pd.concat([accepted_requests_df, new_requests_df])
     else:
         final_df = requests_df
 
-    final_df.to_csv(path.FINAL_PAX_REQUESTS, index=None)
+    final_df.to_csv(config.FINAL_PAX_REQUESTS, index=None)
 
 
 def update_n(new_n):
-    params = path.return_parameter()
+    params = config.return_parameter()
     params.loc[len(params.index)] = ['n_accepted', new_n]
-    params.to_csv(path.PARAMETER_SETTINGS, index=None)
+    params.to_csv(config.PARAMETER_SETTINGS, index=None)
 
 
 def replace_rejected_requests(amount):
@@ -83,8 +83,8 @@ def replace_rejected_requests(amount):
 
     while accepted < amount:
         print('loops starting')
-        right_coordinates   = _1_generate_demand.generate_locations_in_polygone(path.DEMAND_POLYGON_RIGHT, 1)
-        left_coordinates    = _1_generate_demand.generate_locations_in_polygone(path.DEMAND_POLYGON_LEFT, 1)
+        right_coordinates   = _1_generate_demand.generate_locations_in_polygone(config.DEMAND_POLYGON_RIGHT, 1)
+        left_coordinates    = _1_generate_demand.generate_locations_in_polygone(config.DEMAND_POLYGON_LEFT, 1)
 
         request             = _1_generate_demand.generate_requests(right_coordinates, left_coordinates)
 
@@ -134,7 +134,7 @@ def run():
               '')
     else:
         reject_dispensable_requests(index_to_drop)
-    print("requests CLEANED and written to ", path.ACCEPTED_PAX_REQUESTS)
+    print("requests CLEANED and written to ", config.ACCEPTED_PAX_REQUESTS)
 
 
 if __name__ == '__main__':
