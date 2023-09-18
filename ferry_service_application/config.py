@@ -19,9 +19,10 @@ ASSIGNED_PAX_REQUESTS_TEST  = root + '/data/output/_2_assigned_pax_requests_test
 ACCEPTED_PAX_REQUESTS       = root + '/data/output/_3_accepted_assigned_pax_requests.csv'
 FINAL_PAX_REQUESTS          = root + '/data/output/_3_final_pax_requests.csv'
 PAX_REQUESTS_WITH_ROUTING   = root + '/data/output/_4_pax_requests_with_routing.csv'
+OPTIMIZATION_ITER           = root + '/data/output/_5_OPTIMIZATION_ITERATION.csv'
+OPTIMIZATION_ITER_AVG       = root + '/data/output/_5_OPTIMIZATION_ITERATION_AVG.csv'
 
-NEW_MATRIX_USED_STATIONS    = root + '/data/output/_4_tmatrix_used_stations.csv'
-
+# SPECIFYING STATIONS (for indexing)
 NUMBER_OF_STATIONS_RIGHT_SIDE = 17
 NUMBER_OF_STATIONS_LEFT_SIDE  = 17
 PSEUDO_DEPOT                  = [34]
@@ -32,20 +33,18 @@ FERRY_VELOCITY  = 3.33  # 12 km/h in m/s = 3.33
 TIME_MATRIX     = pd.read_csv(STATIONS_DIST_MATRIX, header=None, delimiter=';').div(FERRY_VELOCITY).div(60).round().astype(int)
 DISTANCE_MATRIX = pd.read_csv(STATIONS_DIST_MATRIX, header=None, delimiter=';')
 
-
 # SETTINGS FOR GENERATING REQUESTS
 n_NUMBER_OF_PASSENGERS = 10
 dt_DEPARTURE_TIME_SPAN = 30
-wt_MAX_WAITING_TIME    = 4
-
+INSTANCES_PER_ITERATION= 5
 
 #  MODEL PARAMETERS
 d_SERVICE_TIMES         = 1
-K_VEHICLE_SIZE          = 10
+K_FLEET_SIZE            = 10
 Q_CAPACITY              = 10
 q_LOAD_PER_REQUEST      = 1
 PENALTY_FACTOR          = 10
-TK_MAX_RT_VEHICLE       = 500  # max ride-time p    er vehicle
+TK_MAX_RT_VEHICLE       = 500   # max ride-time per ferry
 L_MAX_RT_PASSENGER      = 100   # max ride-time per passenger
 
 
