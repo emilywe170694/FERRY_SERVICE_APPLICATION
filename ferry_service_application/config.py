@@ -15,12 +15,13 @@ STATIONS_DIST_MATRIX    = root + '/data/input/stations_distance_matrix.csv'
 # Output Data
 INITIAL_PAX_REQUESTS        = root + '/data/output/_1_initial_pax_requests.csv'
 ASSIGNED_PAX_REQUESTS       = root + '/data/output/_2_assigned_pax_requests.csv'
-ASSIGNED_PAX_REQUESTS_TEST  = root + '/data/output/_2_assigned_pax_requests_test.csv'
+ASSIGNED_PAX_REQUESTS_TEST  = root + '/data/output/_2_assigned_pax_requests.csv'
 ACCEPTED_PAX_REQUESTS       = root + '/data/output/_3_accepted_assigned_pax_requests.csv'
 FINAL_PAX_REQUESTS          = root + '/data/output/_3_final_pax_requests.csv'
 PAX_REQUESTS_WITH_ROUTING   = root + '/data/output/_4_pax_requests_with_routing.csv'
 OPTIMIZATION_ITER           = root + '/data/output/_5_OPTIMIZATION_ITERATION.csv'
 OPTIMIZATION_ITER_AVG       = root + '/data/output/_5_OPTIMIZATION_ITERATION_AVG.csv'
+NEW_MATRIX_USED_STATIONS    = root + 'data/output/_5a_MATRIX_USED.csv'
 
 # SPECIFYING STATIONS (for indexing)
 NUMBER_OF_STATIONS_RIGHT_SIDE = 17
@@ -34,7 +35,7 @@ TIME_MATRIX     = pd.read_csv(STATIONS_DIST_MATRIX, header=None, delimiter=';').
 DISTANCE_MATRIX = pd.read_csv(STATIONS_DIST_MATRIX, header=None, delimiter=';')
 
 # SETTINGS FOR GENERATING REQUESTS
-n_NUMBER_OF_PASSENGERS = 10
+n_NUMBER_OF_PASSENGERS = 15
 dt_DEPARTURE_TIME_SPAN = 30
 INSTANCES_PER_ITERATION= 5
 

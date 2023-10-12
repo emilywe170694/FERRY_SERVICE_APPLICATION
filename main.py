@@ -82,23 +82,26 @@ def prep():
 
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
-    # # genau einmal:
-    # if os.path.exists(path.OPTIMIZATION_ITER):
-    #     os.remove(path.OPTIMIZATION_ITER)
-    #
-    # # SETS PER INSTANCE SIZE: 5
-    # for i in range(5):
-    #     prep()
-    #     print("__________PREP_DONE_____________")
-    #     if __name__ == '__main__':
-    #         _4_optimize_ferry__routes
-    #     # in _4_optimize_ferry__routes: iteriert k = 1,2,...,10 und schreibt zu jeder iteration 10 neue linien zu csv.
-    #
-    # df_evaluate = pd.read_csv(path.OPTIMIZATION_ITER)
-    #
-    # #csv_to_db(df_evaluate, "instance_size_10_pax_new")
-    #
-    k_ = [i for i in range(1, path.K_FLEET_SIZE + 1)]
+    # genau einmal:
+    if os.path.exists(config.OPTIMIZATION_ITER):
+        os.remove(config.OPTIMIZATION_ITER)
+
+    # SETS PER INSTANCE SIZE: 5
+    for i in range(1):
+        prep()
+        print("__________PREP_DONE_____________")
+        _4_optimize_ferry__routes.main()
+
+
+
+
+        # in _4_optimize_ferry__routes: iteriert k = 1,2,...,10 und schreibt zu jeder iteration 10 neue linien zu csv.
+
+    df_evaluate = pd.read_csv(config.OPTIMIZATION_ITER)
+
+    #csv_to_db(df_evaluate, "instance_size_10_pax_new")
+
+    k_ = [i for i in range(1, config.K_FLEET_SIZE + 1)]
 
     evaluation = {}
     evaluation2 = {}

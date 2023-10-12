@@ -134,7 +134,7 @@ def run():
               '')
     else:
         reject_dispensable_requests(index_to_drop)
-    print("requests CLEANED and written to ", config.ACCEPTED_PAX_REQUESTS)
+    print("requests CLEANED and written to ", config.FINAL_PAX_REQUESTS)
 
 
 if __name__ == '__main__':

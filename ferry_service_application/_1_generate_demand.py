@@ -10,16 +10,13 @@ API_KEY = 'AIzaSyCRFoABLyG0iRNdu66Um06U1mh4R_ARqfQ'
 GOOGLE_URL = 'https://maps.googleapis.com/maps/api/distancematrix/json?'
 call_gmaps = google_maps_operations.GoogleMaps(API_KEY, GOOGLE_URL)
 
-parameter = config.read_parameter()
 n = config.n_NUMBER_OF_PASSENGERS
-
-
 
 def get_polygone(path):
     """
     Method to read polygon points from a CSV file
     :param path: file path to polygone coordinates
-    :return: vertices limiting an area (polygone)
+    :return: array of vertices
     """
     points = []
     with open(path, 'r') as station_locations:
@@ -53,14 +50,16 @@ def generate_locations_in_polygone(file_path, number_of_requests):
 
 def generate_requests(coordinates_right, coordinates_left):
     """
-    matches 1 coordinate (left) with 1 coordinate (right) and returns list paired coordinates  = PC.
-    Each pair of coordinates in PC represents a start  and a destination of a request.
-    Next, elements in PC are randomly shuffled to prevent requests from all going in the same direction
+    1. Matches 1 coordinate (left) with 1 coordinate (right) and returns list paired coordinates  = PC.
+        -> Each pair of coordinates in PC represents a start  and a destination of a request.
+    2. Elements in PC are randomly shuffled to prevent requests from all going in the same direction
+    3. Conventional Route for each request is obtained via Google Maps API
+    4. Departure time for each request is randomly generated within time span (0, dt_DEPARTURE_TIME_SPAN)
+    5. Requests are written to CSV (_1_initial_pax_requests.csv)
 
-
-    :param coordinates_right:
-    :param coordinates_left:
-    :return:
+    :param coordinates_right: n random points in right polygone
+    :param coordinates_left: n random points in left polygone
+    :return: array of passenger_requests = [[start_lat, start_lon, dest_lat, dest_lon, departure, conventional_time, conventionel_distance], ...]
     """
     requests = []
     for start, destination in list(zip(coordinates_right, coordinates_left)):
@@ -71,11 +70,6 @@ def generate_requests(coordinates_right, coordinates_left):
     for i in range(len(requests)):
         random.shuffle(requests[i])
 
-    """
-      Für jedes Paar Koordinaten ( = request) wird die konventionelle Route berechnet und eine Abfahrtszeit
-      innerhalb der Zeitfensterns (0 und der in den settings festgelegten maximalen departure time) generiert.
-      Erst dann wird die Anfrage als neue Reihe auf die CSV-Datei geschrieben.
-    """
     pax_requests = []
     for start, destination in requests:
         conv = compute_conventional_route(start, destination)  # returns array (time, distance)

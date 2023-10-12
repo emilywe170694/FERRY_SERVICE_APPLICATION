@@ -123,7 +123,7 @@ def generate_eTW_V_var_1():
        - Was macht die größe der Differenz zwischen lTW_pickup und eTW_dropoff aus? Die Differenz kann in jedem Fall als Fahrtzeit genutzt werden.
        Kann aber auch heißen dass die Fähre unnötig früh losfährt?
     """
-    max_waiting_time    = config.wt_MAX_WAITING_TIME
+    # max_waiting_time    = config.wt_MAX_WAITING_TIME
 
     conventional_arrival        = get_arrival_time(departure_time, conventional_times)
 
@@ -169,7 +169,7 @@ def generate_corresponding_matrix(original_distance_matrix, new_V):
         result = np.array(row)
 
     result_df = pd.DataFrame(result, index=new_V, columns=new_V)
-    result_df.to_csv(config.NEW_MATRIX_USED_STATIONS)
+    #result_df.to_csv(config.NEW_MATRIX_USED_STATIONS)
     print(result_df)
     return result
 
@@ -274,9 +274,11 @@ def run():
     model.addConstrs((w[j, k] >= (w[i, k] + q[j]) * x[i, j, k] for i in V for j in V for k in K), name="sieben")
     model.addConstrs((r[i, k] >= u[n + i, k] - (u[i, k] + d[i]) for i in P for k in K), name="acht")
     model.addConstrs((u[2 * n + 1, k] - u[0, k] <= T_k[k] for k in K), name="neun")
-    model.addConstrs((u[i, k] >= E_TW[i] for i in P for k in K), name="zehn-a-1")
+    model.addConstrs((u[i, k] + dvar[i,k] >= E_TW[i] for i in P for k in K), name="zehn-a-1")
     model.addConstrs((u[i, k] <= L_TW[i] for i in P for k in K), name="zehn-b-1")
-    model.addConstrs((u[i, k] - dvar[i, k] >= E_TW[i] for i in D for k in K), name="zehn-a-2")
+    model.addConstrs((u[i, k] >= E_TW[i] for i in D for k in K), name="zehn-a-2")
+    #model.addConstrs((u[i, k] + dvar[i, k] >= E_TW[i] for i in D for k in K), name="zehn-a-2")
+
     model.addConstrs((u[i, k] - dvar[i, k] <= L_TW[i] for i in D for k in K), name="zehn-b-2")
     #model.addConstrs((pvar[i, k] <= 10 for i in P for k in K), name="zehn-a-1")
     model.addConstrs((u[0, k] >= E_TW[0] for k in K), name="zehn-a-3")
@@ -500,9 +502,12 @@ def run_with_iterations(K_Fleetsize):
     model.addConstrs((w[j, k] >= (w[i, k] + q[j]) * x[i, j, k] for i in V for j in V for k in K), name="sieben")
     model.addConstrs((r[i, k] >= u[n + i, k] - (u[i, k] + d[i]) for i in P for k in K), name="acht")
     model.addConstrs((u[2 * n + 1, k] - u[0, k] <= T_k[k] for k in K), name="neun")
-    model.addConstrs((u[i, k] >= E_TW[i] for i in P for k in K), name="zehn-a-1")
-    model.addConstrs((u[i, k] <= L_TW[i] for i in P for k in K), name="zehn-b-1")
-    model.addConstrs((u[i, k] - dvar[i, k] >= E_TW[i] for i in D for k in K), name="zehn-a-2")
+    #model.addConstrs((u[i, k] >= E_TW[i] for i in P for k in K), name="zehn-a-1")
+    #model.addConstrs((u[i, k] <= L_TW[i] for i in P for k in K), name="zehn-b-1")
+
+    # darf vor dem ETW ankommen
+    model.addConstrs((u[i, k] + dvar[i, k] >= E_TW[i] for i in D for k in K), name="zehn-a-2")
+    # darf nach dem LTW ankommen.
     model.addConstrs((u[i, k] - dvar[i, k] <= L_TW[i] for i in D for k in K), name="zehn-b-2")
     # model.addConstrs((pvar[i, k] <= 10 for i in P for k in K), name="zehn-a-1")
     model.addConstrs((u[0, k] >= E_TW[0] for k in K), name="zehn-a-3")
@@ -659,17 +664,20 @@ def run_with_iterations(K_Fleetsize):
     # 2 häng nur die durchschnittswerte an csv2
     file2 = config.OPTIMIZATION_ITER_AVG
 
-
-
-if __name__ == '__main__':
-
-    # cleans data
-    if os.path.exists(config.OPTIMIZATION_ITER):
-        os.remove(config.OPTIMIZATION_ITER)
+def main():
     K_Iter = [i for i in range(1, config.K_FLEET_SIZE+1)]
     # optimizes wirh [1,2,3 ..., 10] ferries
     for k_i in K_Iter:
         run_with_iterations(k_i)
+
+
+if __name__ == '__main__':
+
+    K_Iter = [i for i in range(1, config.K_FLEET_SIZE+1)]
+    # optimizes wirh [1,2,3 ..., 10] ferries
+    for k_i in K_Iter:
+        run_with_iterations(k_i)
+        print("*** optimize_routes finished with k_i = ", k_i, "+**")
 
 
 

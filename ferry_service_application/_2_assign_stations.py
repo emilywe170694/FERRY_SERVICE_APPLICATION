@@ -9,8 +9,6 @@ import numpy as np
 from shapely.geometry import Point, Polygon
 import config
 
-FERRY_VELOCITY = 3.33
-
 def get_stations(file_path):
     data_stations = pd.read_csv(file_path, header=0)
     stations = []
@@ -29,7 +27,6 @@ def get_initial_requests(path):
     return requests
 
 
-# todo duplicate
 def get_polygone(path):
     points = []
     with open(path, 'r') as station_locations:
@@ -43,38 +40,28 @@ def get_polygone(path):
 def concat_assigned_stations_to_requests_csv(results_df):
     initial_requests    = pd.read_csv(config.INITIAL_PAX_REQUESTS)
     assigned_requests   = pd.concat([initial_requests, results_df], axis=1)
-    assigned_requests.to_csv(config.ASSIGNED_PAX_REQUESTS_TEST, index=None)
+    assigned_requests.to_csv(config.ASSIGNED_PAX_REQUESTS, index=None)
     print('**** assigned requests written to ', config.ASSIGNED_PAX_REQUESTS)
 
 def assign_stations(requests):
     """
+            The nearest stations are selected for the assignment of start and destination points of the initial requests,
+            with distances being calculated using the Euclidean metric.
+            A location's closest station may be on the opposite side of the river.
+            Consequently, it is initially determined in which polygon (on which side of the river)
+            the respective location is situated. If the starting point is situated in the left polygon,
+            then only a station on the left side can be considered as the starting station.
+            Simultaneously, the destination station must be on the right side, along with the destination point.
 
-            Start- und Zielpunkt der initialen Requests werden den nächstgelegenen Stationen zugewiesen.
-            Die Distanzen werden euklidisch berechnet. Die nächstgelegene Station eines Standorts
-            kann also ggf.auf der gegenüberliegenden Flussseite liegen.
-            Deshalb wird zunächst bestimmt in welchem Polygon (auf welcher Flussseite) sich der jeweilige Standort befindet.
-            Liegt der Startpunkt im linken Polygon, so kommt als Startstation nur eine Station auf der linken Seite in Frage.
-            Gleichzeitig muss die Zielstation ebenso wie der Zielpunkt auf der rechten Seite liegen.
-
-            Stationen [0:16] liegen auf der linken Seite, Stationen[17:33] liegen auf der rechten Seite.
+           Stations [0:16] are located on the left side, stations [17:33] are located on the right side.
 
             :parameter:
-            requests = [[startpunkt, zielpunkt], [startpunkt, zielpunkt], ..., [startpunkt, zielpunkt]]
+            requests = [[start, destination], [start, destination], ..., [start, destination]]
                      = [[51.2349, 6.7794], [51.2421, 6.7052]], ...]
 
-            :return:
+            :return: results =  ([pickup_station, dropoff_station, assigned_pickup_coord, assigned_dropoff_coord,
+                        distance_to_pickup, distance_from_dropoff, time_to_pickup, time_from_dropoff, min_ferry_time])
     """
-
-    """
-            available_stations enthält liste von koordinaten der erreichbaren stationen (auf gleicher flussseite 
-            wie der Startpunkt).
-
-            cdist generiert eine distanzmatrix von dem startpunkt eines requests (request[0] zu allen 
-            erreichbaren stationen. 
-            argmin gibt dann den kleinsten Wert dieser einreihigen Distanzmatrix wieder. 
-
-    """
-
 
     stations_left  = get_stations(config.STATIONS_COORD_LEFT)
     stations_right = get_stations(config.STATIONS_COORD_RIGHT)
@@ -104,17 +91,16 @@ def assign_stations(requests):
             add_pickup          = config.NUMBER_OF_STATIONS_RIGHT_SIDE
             add_dropoff         = 0
 
-        # # TODO : TRY DIFFERENT ASSIGNMENTS!
+
+        # VARIANT A - MINIMIZE ROUTE ON LAND
         # closest_pickup_index    = int(distance.cdist([start], available_pickup, 'euclidean').argmin(axis=1))
         # assigned_pickup_coord   = available_pickup[closest_pickup_index]
         # pickup_station          = closest_pickup_index + add_pickup
-        #
-        #
         # closest_dropoff_index   = int(distance.cdist([start], available_dropoff, 'euclidean').argmin(axis=1))
         # assigned_dropoff_coord  = available_dropoff[closest_dropoff_index]
         # dropoff_station         = closest_dropoff_index + add_dropoff
 
-
+        # VARIANT B - MINIMIZE ROUTE ON WATER
         # generate distance matrix from request start to available pickup_stations
         start_to_pickup_dm = distance.cdist([start], available_pickup, 'euclidean')
         # sort size distances by index (ascending)
@@ -129,7 +115,7 @@ def assign_stations(requests):
         assigned_pickup_coord = available_pickup[closest_pickup_index]
         pickup_station = closest_pickup_index + add_pickup
 
-        # todo entweder von start oder von pickup
+        # ANALOGOUS PROCESS FOR DROPOFF-STATIONS
         pickup_to_dropoff_dm    = distance.cdist([available_pickup[closest_pickup_index]], available_dropoff, 'euclidean')
         pickup_to_dropoff_dist  = np.argsort(pickup_to_dropoff_dm)
         closest_three           = pickup_to_dropoff_dist[0][0:3]
@@ -139,12 +125,7 @@ def assign_stations(requests):
         assigned_dropoff_coord  = available_dropoff[dropoff_index]
         dropoff_station         = dropoff_index + add_dropoff
 
-
-
-
-
-
-        # todo: subroutes. hier erfolgt die Auswertung
+        # GET VALUES
         distance_to_pickup = round(GD(start, assigned_pickup_coord).meters, 2)
         time_to_pickup = int((distance_to_pickup / config.BIKING_VELOCITY_IN_METER) * 60)
         distance_from_dropoff = round(GD(destination, assigned_dropoff_coord).meters, 2)
