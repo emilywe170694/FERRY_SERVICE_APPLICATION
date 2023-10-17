@@ -1,6 +1,7 @@
 import pandas as pd
 
 # Input Data
+GOOGLE_MAPS_API_KEY     = 'AIzaSyCRFoABLyG0iRNdu66Um06U1mh4R_ARqfQ'
 
 root = '/Users/emilyjlw/PycharmProjects/DARP05/Ferry_Application_'
 
@@ -9,14 +10,13 @@ DEMAND_POLYGON_RIGHT    = root + "/data/input/demand_polygon_right.csv"
 PARAMETER_SETTINGS      = root + '/data/input/parameter_settings.csv'
 STATIONS_COORD_LEFT     = root + '/data/input/stations_coordinates_left.csv'
 STATIONS_COORD_RIGHT    = root + '/data/input/stations_coordinates_right.csv'
+STATIONS_COORD          = root + '/data/input/stations_coordinates.csv'
 STATIONS_DIST_MATRIX    = root + '/data/input/stations_distance_matrix.csv'
 
 
 # Output Data
 INITIAL_PAX_REQUESTS        = root + '/data/output/_1_initial_pax_requests.csv'
 ASSIGNED_PAX_REQUESTS       = root + '/data/output/_2_assigned_pax_requests.csv'
-ASSIGNED_PAX_REQUESTS_TEST  = root + '/data/output/_2_assigned_pax_requests.csv'
-ACCEPTED_PAX_REQUESTS       = root + '/data/output/_3_accepted_assigned_pax_requests.csv'
 FINAL_PAX_REQUESTS          = root + '/data/output/_3_final_pax_requests.csv'
 PAX_REQUESTS_WITH_ROUTING   = root + '/data/output/_4_pax_requests_with_routing.csv'
 OPTIMIZATION_ITER           = root + '/data/output/_5_OPTIMIZATION_ITERATION.csv'
@@ -35,14 +35,14 @@ TIME_MATRIX     = pd.read_csv(STATIONS_DIST_MATRIX, header=None, delimiter=';').
 DISTANCE_MATRIX = pd.read_csv(STATIONS_DIST_MATRIX, header=None, delimiter=';')
 
 # SETTINGS FOR GENERATING REQUESTS
-n_NUMBER_OF_PASSENGERS = 15
+n_NUMBER_OF_PASSENGERS = 10
 dt_DEPARTURE_TIME_SPAN = 30
 INSTANCES_PER_ITERATION= 5
 
 #  MODEL PARAMETERS
 d_SERVICE_TIMES         = 1
 K_FLEET_SIZE            = 10
-Q_CAPACITY              = 10
+Q_CAPACITY              = 15
 q_LOAD_PER_REQUEST      = 1
 PENALTY_FACTOR          = 10
 TK_MAX_RT_VEHICLE       = 500   # max ride-time per ferry

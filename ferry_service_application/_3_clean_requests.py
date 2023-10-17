@@ -29,7 +29,6 @@ def get_min_ferry_time():
 
 def identify_dispensable_requests(con, ferry):
     """
-
     Compares the conventional travel time to the minimum ferry time (no waiting times, direct travel)
     A request is 'dispensable' when 'min ferry-route' > 'conventional travel time'.
 
@@ -48,10 +47,11 @@ def identify_dispensable_requests(con, ferry):
 
 def reject_dispensable_requests(index_to_drop):
     """
-    Die in Methode identify_dispensable_requests identifizierten rows gelten als nicht akzeptable Requests.
-    Es wird ein neuer Requests_dataframe generiert, der nur die akzeptieren Requests enthält.
-    Anschließend werden die gedroppten Requests durch neue Requests in der Methode replace_rejected_requests ersetzt.
-    Die neuen Requests werden wiederum auf Zulässkigkeit geprüft bis das initiale n erreicht ist. 
+    The method "identify_dispensable_requests" identifies rows that represent unacceptable requests.
+    These rows are considered for removal. A new "requests_dataframe" is created, containing only the accepted requests.
+    Subsequently, the replace_rejected_requests method is used to replace the dropped requests with new requests.
+    The process runs until the initial count 'n' is achieved.
+
     :param index_to_drop: Array of indices that are to be droppen from request csv = [1,2,3..]
     :return: 
     """
@@ -62,7 +62,11 @@ def reject_dispensable_requests(index_to_drop):
     if number_of_accepted_requests < config.n_NUMBER_OF_PASSENGERS:
         new_requests_df = replace_rejected_requests(amount=len(index_to_drop))
         final_df = pd.concat([accepted_requests_df, new_requests_df])
+        print("requests CLEANED and written to ", config.FINAL_PAX_REQUESTS)
     else:
+        print(''
+              'no requests rejected'
+              '')
         final_df = requests_df
 
     final_df.to_csv(config.FINAL_PAX_REQUESTS, index=None)
@@ -75,9 +79,11 @@ def update_n(new_n):
 
 
 def replace_rejected_requests(amount):
-    # same as def run, but appending new requests to existing csv instead of creating a new set of requests.
-    # requests are build one by one, but methods _1_generate_demand.generate_requests / _2_assign_stations.assign_stations
-    # usually deal with more than one request. Therefore  request[0] is the only one required in this method.
+    """
+    generate new acceptable request in every iteration.
+    methods _1_generate_demand.generate_requests / _2_assign_stations.assign_stations
+    usually deal with more than one request - request[0] is the only one required in this method.
+    """
     accepted = 0
     accepted_requests = []
 
@@ -88,21 +94,24 @@ def replace_rejected_requests(amount):
 
         request             = _1_generate_demand.generate_requests(right_coordinates, left_coordinates)
 
-        """request = [[start_lat, start_lon, destination_lat, destination_lon, departure_time, conv_time, conv_distance)]]"""
-        request_formatted2  = [[[request[0][0], request[0][1]],
+        """
+        request = [[start_lat, start_lon, destination_lat, destination_lon, departure_time, conv_time, conv_distance)]]
+        (but 'assign_stations' reads only start and dest from each request. request_start_dest represents an 
+        equivalent outcome.) 
+        """
+
+        request_start_dest  = [[[request[0][0], request[0][1]],
                                [request[0][2], request[0][3]]]]
 
-
-        assigned_request    = _2_assign_stations.assign_stations(request_formatted2)
+        assigned_request    = _2_assign_stations.assign_stations(request_start_dest)
         """ assigned_request = [[pickup_station, dropoff_station, assigned_pickup_coord, assigned_dropoff_coord,
                                  distance_to_pickup, distance_from_dropoff, time_to_pickup, time_from_dropoff, min_ferry_time]]"""
 
-        conventional        = request[0][5]
-        min_ferry           = assigned_request[0][8]
-        if conventional > min_ferry:
+        conventional_arrival_time        = request[0][5]
+        min_ferry_arrival_time           = assigned_request[0][8]
+        if conventional_arrival_time > min_ferry_arrival_time:
             print('accepted')
             accepted += 1
-            # jetzt muss ich irgendwie alles in einem array zusammensetzen
             accepted_requests.extend([request[0]+assigned_request[0]])
         else:
             print('rejected, try again')
@@ -111,7 +120,9 @@ def replace_rejected_requests(amount):
                                           columns=['start_lat', 'start_lon',
                                                    'destination_lat', 'destination_lon',
                                                    'departure',
-                                                   'conventional_t (in min)', 'conventional_d (in km)',
+                                                   'conventional_t (in min)',
+                                                   'conventional_arrival',
+                                                   'conventional_d (in km)',
                                                    'pickup_station', 'dropoff_station',
                                                    'pickup_coord', 'dropoff_coord',
                                                    'distance_to_pickup', 'distance_from_dropoff',
@@ -127,15 +138,7 @@ def run():
 
     index_to_drop = identify_dispensable_requests(conventional_travel_time, ferry_travel_time)
     print('REQUEST BY INDEX TO REJECT: ', index_to_drop)
-
-    if not index_to_drop:
-        print(''
-              'no requests rejected'
-              '')
-    else:
-        reject_dispensable_requests(index_to_drop)
-    print("requests CLEANED and written to ", config.FINAL_PAX_REQUESTS)
-
+    reject_dispensable_requests(index_to_drop)
 
 if __name__ == '__main__':
     run()

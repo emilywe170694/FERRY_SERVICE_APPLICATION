@@ -1,0 +1,22 @@
+
+.yoyo {
+    background-color: #669cff;
+}
+
+.body {
+    font: bold
+}
+
+.marker-position {
+    bottom: 6px;
+    left: 10px;
+}
+
+.custom-label {
+    position: absolute;
+    background: white;
+    padding: 5px;
+    border: 1px solid #000;
+    top: -30px; /* Passen Sie den Wert an, um die vertikale Position anzupassen */
+    left: 15px; /* Passen Sie den Wert an, um die horizontale Position anzupassen */
+}
