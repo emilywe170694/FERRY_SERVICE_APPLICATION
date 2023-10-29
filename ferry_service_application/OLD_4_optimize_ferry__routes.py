@@ -605,11 +605,13 @@ def run_with_iterations(K_Fleetsize):
         print('Required capacity (used seats): ', used_seats)
         print('DELAY: ', DELAY)
 
-        print("\nn = ", n)
-        print("\ne_i = ", E_TW)
-        print("l_i = ", L_TW)
-
         timetable_sorted = indexmatch_time_route(ROUTE_IN_NODES, ROUTE_IN_TIMES)
+
+        data = {'e_i': E_TW, 'l_i': L_TW, 'timetable': timetable_sorted}
+        df = pd.DataFrame(data)
+        print(df)
+
+
 
         print("\n# Ferries = ", len(K))
 
@@ -650,9 +652,9 @@ def run_with_iterations(K_Fleetsize):
 
         df_table = pd.DataFrame(file1)
 
-        add_header = not os.path.exists(config.OPTIMIZATION_ITER)
+        add_header = not os.path.exists(config.EVALUATION_PAX)
 
-        df_table.to_csv(config.OPTIMIZATION_ITER, mode='a', header=add_header, index=False)
+        df_table.to_csv(config.EVALUATION_PAX, mode='a', header=add_header, index=False)
 
     else:
 

@@ -37,26 +37,36 @@
             stylers: [
                 {visibility: 'off'} // Setze die Sichtbarkeit der POI-Labels auf 'aus'
             ]
+        },
+
+          {
+            featureType: 'road',
+            elementType: 'labels',
+            stylers: [
+                {visibility: 'off'} // Setze die Sichtbarkeit der POI-Labels auf 'aus'
+            ]
         }
+
+
     ];
 
-    function Route() {
-
-            var start = new google.maps.LatLng(51.26320196573723,6.731211569423458);
-            var end = new google.maps.LatLng(51.23747965658745,6.7355765593294725);
-            var request = {
-                origin: start,
-                destination: end,
-                travelMode: google.maps.TravelMode.WALKING
-            };
-            directionsService.route(request, function (result, status) {
-                if (status == google.maps.DirectionsStatus.OK) {
-                    directionsDisplay.setDirections(result);
-                } else {
-                    alert("couldn't get directions:" + status);
-                }
-            });
-        }
+    // function Route() {
+    //
+    //         var start = new google.maps.LatLng(51.26320196573723,6.731211569423458);
+    //         var end = new google.maps.LatLng(51.23747965658745,6.7355765593294725);
+    //         var request = {
+    //             origin: start,
+    //             destination: end,
+    //             travelMode: google.maps.TravelMode.WALKING
+    //         };
+    //         directionsService.route(request, function (result, status) {
+    //             if (status == google.maps.DirectionsStatus.OK) {
+    //                 directionsDisplay.setDirections(result);
+    //             } else {
+    //                 alert("couldn't get directions:" + status);
+    //             }
+    //         });
+    //     }
 
 
     function initMap() {
@@ -69,20 +79,20 @@
             styles: customMapStyle
 
         });
-        var request = {
-            origin: '51.26320196573723,6.731211569423458',
-            destination: '51.23747965658745,6.7355765593294725',
-            travelMode: 'DRIVING' // Sie können auch 'WALKING', 'BICYCLING' usw. verwenden
-        };
-
-        directionsService.route(request, function (response, status) {
-            if (status === 'OK') {
-                directionsRenderer.setDirections(response);
-            } else {
-                window.alert('Fehler bei der Routenberechnung: ' + status);
-            }
-        });
-        directionsRenderer.setMap(map);
+        // var request = {
+        //     origin: '51.26320196573723,6.731211569423458',
+        //     destination: '51.23747965658745,6.7355765593294725',
+        //     travelMode: 'DRIVING' // Sie können auch 'WALKING', 'BICYCLING' usw. verwenden
+        // };
+        //
+        // directionsService.route(request, function (response, status) {
+        //     if (status === 'OK') {
+        //         directionsRenderer.setDirections(response);
+        //     } else {
+        //         window.alert('Fehler bei der Routenberechnung: ' + status);
+        //     }
+        // });
+        // directionsRenderer.setMap(map);
 
 
 
@@ -115,7 +125,7 @@
                 fillOpacity: 1,
                 strokeColor: 'white',
                 strokeWeight: 0.5,
-                scale: 1.2, // Größe des Symbols
+                scale: 1.5, // Größe des Symbols
                 labelOrigin: new google.maps.Point(0, 0), // Ankerpunkt für den Text
                 labelClass: "marker-label", // CSS-Klasse für den Text
                 label: {
@@ -160,7 +170,7 @@
 
             var customIconDest = {
                 url: '/static/destinations.png',
-                scaledSize: new google.maps.Size(20, 20)
+                scaledSize: new google.maps.Size(30, 30)
             };
 
             for (var i = 0; i < request_start.length; i++) {
@@ -171,7 +181,15 @@
                         color: 'white'
                     },
                     map: map,
-                    icon: customIconHouse
+                    icon: createNumberedCircle(i + 1, 'gray', 'red'),
+                    label: {
+                        text: (i).toString(), // Label content
+                        color: 'white', // Change the label text color
+                        fontSize: '14px', // Change the label text size
+                         // Change the label text weight
+                        textAlign: 'center', // Align the text center
+                        textBaseline: 'middle' // Align the text vertically center
+                    },
 
                 });
             }
@@ -182,8 +200,17 @@
                 var marker = new google.maps.Marker({
                     position: new google.maps.LatLng(request_dest[i][0], request_dest[i][1]),
                     map: map,
-                    icon: customIconDest
+                    icon: createNumberedCircle(i + 1, 'black', 'red'),
+                    label: {
+                        text: (i).toString(), // Label content
+                        color: 'white', // Change the label text color
+                        fontSize: '14px', // Change the label text size
+                         // Change the label text weight
+                        textAlign: 'center', // Align the text center
+                        textBaseline: 'middle' // Align the text vertically center
+                    },
                 });
+
             }
 
             for (var i = 0; i < request_dest.length; i++) {
@@ -246,8 +273,6 @@
 
     initMap();
     Route();
-
-
     </script>
 </body>
 </html>
