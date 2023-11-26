@@ -1,9 +1,11 @@
 import pandas as pd
 
 # Input Data
-GOOGLE_MAPS_API_KEY     = 'AIzaSyCRFoABLyG0iRNdu66Um06U1mh4R_ARqfQ'
+# TODO insert your key
+GOOGLE_MAPS_API_KEY     = 'xyz'
 
-root = '/Users/emilyjlw/PycharmProjects/DARP05/Ferry_Application_'
+# TODO insdert your root file
+root = '/.../.../.../.../Ferry_Application_'
 
 DEMAND_POLYGON_LEFT     = root + "/data/input/demand_polygon_left.csv"
 DEMAND_POLYGON_RIGHT    = root + "/data/input/demand_polygon_right.csv"
@@ -35,20 +37,23 @@ TIME_MATRIX     = pd.read_csv(STATIONS_DIST_MATRIX, header=None, delimiter=';').
 DISTANCE_MATRIX = pd.read_csv(STATIONS_DIST_MATRIX, header=None, delimiter=';')
 
 # SETTINGS FOR GENERATING REQUESTS
-n_NUMBER_OF_PASSENGERS = 2
-dt_DEPARTURE_TIME_SPAN = 15
+n_NUMBER_OF_PASSENGERS = 10
+dt_DEPARTURE_TIME_SPAN = 20
 NUMBER_OF_INSTANCES    = 2
 
 #  MODEL PARAMETERS
 d_SERVICE_TIMES         = 1
-K_FLEET_SIZE            = 2
+K_FLEET_SIZE            = 20
 Q_CAPACITY              = 15
 q_LOAD_PER_REQUEST      = 1
 PENALTY_FACTOR          = 1000
 TK_MAX_RT_VEHICLE       = 500   # max ride-time per ferry
-L_MAX_RT_PASSENGER      = 50   # max ride-time per passenger
+L_MAX_RT_PASSENGER      = 200   # max ride-time per passenger
 
-MAX_RUNTIME             = 1
+MAX_RUNTIME             = 120
+
+BENCHMARK_CLEAN_REQUESTS = 3
+
 
 
 

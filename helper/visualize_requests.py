@@ -43,7 +43,6 @@ def format_column(column_list):
 app = Flask('ferry_app')
 
 # Erzeugen Sie eine Liste von Koordinaten (Beispiel)
-coordinates = [(51.22786415395434, 6.772850463594631)]
 gmaps_api = config.GOOGLE_MAPS_API_KEY
 
 
@@ -56,7 +55,7 @@ request_dest        = list(zip(read_column(requests, 'destination_lat'),
 request_pickup      = format_column(read_column(requests, 'pickup_coord'))
 request_dropoff     = format_column(read_column(requests, 'dropoff_coord'))
 
-#------workaround---------
+#------workaround: # SINGLE INSTANCE ANALYSIS ---------
 start = [(51.26999717159475, 6.709110597661836),
 (51.2550047279871, 6.75348971507969),
 (51.2647314391159, 6.6869342724008805),
@@ -97,34 +96,28 @@ for item in stations:
     PW.append(station_coordinates[item[0]])
     DW.append(station_coordinates[item[1]])
 
+#------END workaround ---------
 
-
-
-
-
-print(station_coordinates)
-print(request_pickup)
-print(stations)
-print(PW)
-print(DW)
 @app.route('/')
+
+# SINGLE INSTANCE ANALYSIS
+# def map():
+#     return render_template('map.html',
+#                            station_coordinates = station_coordinates,
+#                            gmaps_api = gmaps_api,
+#                            request_start = start,
+#                            request_dest = destination,
+#                            request_pickup = PW,
+#                            request_dropoff = DW)
+
 def map():
     return render_template('map.html',
-                           coordinates=coordinates,
                            station_coordinates = station_coordinates,
                            gmaps_api = gmaps_api,
-                           request_start = start,
-                           request_dest = destination,
-                           request_pickup = PW,
-                           request_dropoff = DW)
+                           request_start = request_start,
+                           request_dest = request_dest,
+                           request_pickup = request_pickup,
+                           request_dropoff = request_dropoff)
 
 if __name__ == '__main__':
     app.run(port=8080, debug=True)
-
-
-
-
-# area_of_operation = gpd.read_file('/Users/emilyjlw/PycharmProjects/DARP05/Ferry_Application_/helper/visualize/Shapefile-polygon.shp')
-# area_of_operation.plot()
-# area_of_operation.to_crs(epsg=4326).plot()
-# plt.show()

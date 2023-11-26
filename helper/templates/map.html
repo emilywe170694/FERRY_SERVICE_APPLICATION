@@ -8,7 +8,7 @@
 
 </head>
 <body>
-<div class="yoyo" > FERRY SERVICE APPLICATION <i class = "material-icons"> language </i> </div>
+<div class="yoyo" > FERRY SERVICE APPLICATION  </div>
 <div id="map" style="height: 100vh; width: 100%;"></div>
 </body>
 
@@ -213,31 +213,31 @@
 
             }
 
-            for (var i = 0; i < request_dest.length; i++) {
-                var destLatLng = new google.maps.LatLng(request_dest[i][0], request_dest[i][1]);
-                var dropoffLatLng = new google.maps.LatLng(request_dropoff[i][0], request_dropoff[i][1]);
-
-                var startLatLon = new google.maps.LatLng(request_start[i][0], request_start[i][1]);
-                var pickupLatLon = new google.maps.LatLng(request_pickup[i][0], request_pickup[i][1]);
-                const randomColor = getRandomHexColor();
-
-                var polyline_dropoff_dest = new google.maps.Polyline({
-                    path: [destLatLng, dropoffLatLng],
-                    strokeColor: randomColor, // Farbe der Linie
-                    strokeOpacity: 1, // Deckkraft der Linie
-                    strokeWeight: 2 // Breite der Linie
-                });
-
-                var polyline_start_pickup = new google.maps.Polyline({
-                    path: [startLatLon, pickupLatLon],
-                    strokeColor: randomColor, // Farbe der Linie
-                    strokeOpacity: 1, // Deckkraft der Linie
-                    strokeWeight: 2 // Breite der Linie
-                });
-
-                polyline_dropoff_dest.setMap(map); // Linie zur Karte hinzufügen
-                polyline_start_pickup.setMap(map);
-            }
+            // for (var i = 0; i < request_dest.length; i++) {
+            //     var destLatLng = new google.maps.LatLng(request_dest[i][0], request_dest[i][1]);
+            //     var dropoffLatLng = new google.maps.LatLng(request_dropoff[i][0], request_dropoff[i][1]);
+            //
+            //     var startLatLon = new google.maps.LatLng(request_start[i][0], request_start[i][1]);
+            //     var pickupLatLon = new google.maps.LatLng(request_pickup[i][0], request_pickup[i][1]);
+            //     const randomColor = getRandomHexColor();
+            //
+            //     var polyline_dropoff_dest = new google.maps.Polyline({
+            //         path: [destLatLng, dropoffLatLng],
+            //         strokeColor: randomColor, // Farbe der Linie
+            //         strokeOpacity: 1, // Deckkraft der Linie
+            //         strokeWeight: 2 // Breite der Linie
+            //     });
+            //
+            //     var polyline_start_pickup = new google.maps.Polyline({
+            //         path: [startLatLon, pickupLatLon],
+            //         strokeColor: randomColor, // Farbe der Linie
+            //         strokeOpacity: 1, // Deckkraft der Linie
+            //         strokeWeight: 2 // Breite der Linie
+            //     });
+            //
+            //     polyline_dropoff_dest.setMap(map); // Linie zur Karte hinzufügen
+            //     polyline_start_pickup.setMap(map);
+            // }
 
             for (var i = 0; i < request_pickup.length; i++) {
                 var marker = new google.maps.Marker({

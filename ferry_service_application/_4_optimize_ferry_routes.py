@@ -73,11 +73,13 @@ def generate_corresponding_matrix(original_distance_matrix, new_V, name):
 
 def optimize(k_fleetsize, objective):
     # "P_" represents the actual stations whereas P represents an iteration of P_ that is used in the model
+    print("START OPTIMIZING - FLEETSIZE: ", k_fleetsize, "  // OBJECTIVE: ", objective)
+
     P_    = config.read_column('pickup_station', requests)
     D_    = config.read_column('dropoff_station', requests)
     V_    = pseudo_depot + P_ + D_ + pseudo_depot # V_ = [Depot, P,.. P, D,.. D, Depot]
 
-    # STEP 1: generate time-windows
+    # STEP 1: generate time-windows1
     E_TW, L_TW = get_time_windows()
 
     # STEP 2: set model nodes
@@ -157,30 +159,26 @@ def optimize(k_fleetsize, objective):
     model.addConstrs((r[i, k] <= L for i in P for k in K), name="(11b)")
     model.addConstrs((max(0, q[i]) <= w[i, k] for i in V for k in K), name="(12a)")
     model.addConstrs((min(Q[k], Q[k] + q[i]) >= w[i, k] for i in V for k in K), name="(12b)")
-
     model.addConstrs((u[i+n, k] >= u[i, k]  for i in P for k in K), name="DREIZEHN-neu")
 
-    # manipulate penalties:
-    # model.addConstrs((d_var[i, k] <= 10 for i in D for k in K), name="dvar-Begrenzung NEU!")
-    # model.addConstr(max_var_d == gp.max_(dvar[i, k] for i in D for k in K))
-
     # ARC STRUCTURE:
-    # darf von 0 nirgendwo hin ausser P, darf niemals nach 0 fahren, darf nur von einem D nach 2n+1 fahren,
-    # darf niemals von 2n+1 wegfahren, darf niemals i = j fahren
-    model.addConstrs((x[0, i, k] == 0 for i in set().union([0], D, [2 * n + 1]) for k in K), name="my-a")
+    model.addConstrs((x[0, i, k] == 0 for i in set().union([0], D) for k in K), name="my-a")
     model.addConstrs((x[i, 0, k] == 0 for i in V for k in K), name="my-b")
     model.addConstrs((x[i, 2 * n + 1, k] == 0 for i in set().union([0], P, [2 * n + 1]) for k in K), name="my-b")
     model.addConstrs((x[2 * n + 1, i, k] == 0 for i in V for k in K), name="my-b")
     model.addConstrs((x[i, i, k] == 0 for i in V for k in K), name="my-b")
 
     model.setParam('TimeLimit', config.MAX_RUNTIME * 60)  # limits runtime to 15 minutes
+    #model.Params.SolutionLimit = 1
+
     model.optimize()
 
 
-    if model.status == gp.GRB.OPTIMAL or model.status == gp.GRB.TIME_LIMIT:
+    if model.SolCount > 0:
         optimality_gap = f"{model.MIPGap * 100}%"
+        print('mode:', objective)
         print(f"Optimality Gap: {optimality_gap * 100}%")
-        model.printAttr('X')
+
         print('END')
 
         print('PICKUP: ', P_)

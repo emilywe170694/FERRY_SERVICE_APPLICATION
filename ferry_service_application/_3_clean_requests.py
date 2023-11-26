@@ -4,10 +4,6 @@ import _1_generate_demand
 import _2_assign_stations
 import random
 
-INITIAL_REQUESTS = "/Users/emilyjlw/PycharmProjects/DARP05/Application3/Data/output/PassengerRequests_departureTime.csv"
-CLEANED_REQUESTS = "/Users/emilyjlw/PycharmProjects/DARP05/Application3/Data/output/PassengerRequests_infeasibleRemoved.csv"
-PARAMS = '/Users/emilyjlw/PycharmProjects/DARP05/Application3/Data/input/Parameter.csv'
-
 # 12 km/h = 3.33 meter/second
 parameter = config.read_parameter()
 
@@ -39,7 +35,7 @@ def identify_dispensable_requests(con, ferry):
     index_to_exclude = []
 
     for i in range(len(ferry)):
-        if ferry[i] >= con[i]:
+        if ferry[i] + config.BENCHMARK_CLEAN_REQUESTS + config.d_SERVICE_TIMES >= con[i]:
             index_to_exclude.append(i)
 
     return index_to_exclude
