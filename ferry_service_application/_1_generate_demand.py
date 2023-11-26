@@ -6,7 +6,7 @@ from helper import google_maps_operations
 import config
 
 # CONSTANTS
-API_KEY = 'AIzaSyCRFoABLyG0iRNdu66Um06U1mh4R_ARqfQ'
+API_KEY = config.GOOGLE_MAPS_API_KEY
 GOOGLE_URL = 'https://maps.googleapis.com/maps/api/distancematrix/json?'
 call_gmaps = google_maps_operations.GoogleMaps(API_KEY, GOOGLE_URL)
 
@@ -72,13 +72,13 @@ def generate_requests(coordinates_right, coordinates_left):
 
     pax_requests = []
     for start, destination in requests:
-        conv = compute_conventional_route(start, destination)  # returns array (time, distance)
+        conv_t_d        = compute_conventional_route(start, destination)  # returns array (time, distance)
+        departure   = random.randint(0, config.dt_DEPARTURE_TIME_SPAN)
+        conv_arrival = departure + conv_t_d[0]
         pax_requests.append(
-            [start[0], start[1], destination[0], destination[1], random.randint(0, config.dt_DEPARTURE_TIME_SPAN), conv[0], conv[1]])
+            [start[0], start[1], destination[0], destination[1], departure, conv_t_d[0], conv_arrival, conv_t_d[1]])
 
     return pax_requests
-
-
 
 def compute_conventional_route(start, destination):
     print('computing conventional routes.. ')
@@ -90,10 +90,14 @@ def compute_conventional_route(start, destination):
     time_distance = call_gmaps.route_time_distance(origin, dest, mode)
     return time_distance
 
+def get_arrival_time(start, traveltime):
+    sum_result = [a + b for a, b in zip(start, traveltime)]
+    return sum_result
+
 def requests_to_dataframe(final_requests):
     request_df = pd.DataFrame(final_requests,
                               columns=['start_lat', 'start_lon', 'destination_lat', 'destination_lon',  'departure',
-                                       'conventional_t (in min)',
+                                       'conventional_t (in min)', 'conventional_arrival',
                                        'conventional_d (in km)'])
     return request_df
 

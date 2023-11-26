@@ -12,7 +12,7 @@ pseudo_depot        = config.PSEUDO_DEPOT
 parameter           = config.read_parameter()
 departure_time      = config.read_column('departure', config.FINAL_PAX_REQUESTS)
 
-# CONVENTIONAL ROUTE
+# CONVENTIONAL ROUTE (required for determining time windows)
 
 service_requests    = config.FINAL_PAX_REQUESTS
 conventional_times  = config.read_column('conventional_t (in min)', service_requests)
@@ -82,8 +82,8 @@ def log_times(timetable_array, delay, P, D, d):
     kdf         = pd.DataFrame(kn, columns=['#vehicles'])
 
     request_file                    = pd.read_csv(config.FINAL_PAX_REQUESTS)
-    request_file['dropout_time']    = dropout_time
     request_file['pickup_time']     = pickup_time
+    request_file['dropout_time']    = dropout_time
     request_file['delay']           = delayed_arrival
     request_file['#vehicles']       = kdf
 
@@ -438,6 +438,9 @@ def run_with_iterations(K_Fleetsize):
     # STEP 1: generate time-windows
     E_TW, L_TW = generate_eTW_V_var_1()
 
+    print('etw', E_TW)
+    print('etw', L_TW)
+
     # STEP 2: set model nodes
     n = len(P_ACTUAL)
     P = [i for i in range(1, n + 1)]
@@ -480,12 +483,15 @@ def run_with_iterations(K_Fleetsize):
     pvar = model.addVars(P, K, vtype=gp.GRB.INTEGER, name="pvar")
     dvar = model.addVars(D, K, vtype=gp.GRB.INTEGER, name="dvar")
 
-    model.setObjective(gp.quicksum(u[i+n,k] - u[i, k] for i in P for k in K)
+    model.setObjective(gp.quicksum(dist_ij[i][j] * x[i, j, k] for i in V for j in V for k in K)
 
                        + gp.quicksum(dvar[i, k] * P_F for i in D for k in K)
                        # + max_var_p
                        # + max_var_d
                        , gp.GRB.MINIMIZE)
+
+
+
 
     # model.setObjective(gp.quicksum(u[i+n,k] - u[i, k] for i in P for k in K), GBR.minimize
 
@@ -502,14 +508,17 @@ def run_with_iterations(K_Fleetsize):
     model.addConstrs((w[j, k] >= (w[i, k] + q[j]) * x[i, j, k] for i in V for j in V for k in K), name="sieben")
     model.addConstrs((r[i, k] >= u[n + i, k] - (u[i, k] + d[i]) for i in P for k in K), name="acht")
     model.addConstrs((u[2 * n + 1, k] - u[0, k] <= T_k[k] for k in K), name="neun")
-    #model.addConstrs((u[i, k] >= E_TW[i] for i in P for k in K), name="zehn-a-1")
-    #model.addConstrs((u[i, k] <= L_TW[i] for i in P for k in K), name="zehn-b-1")
+    model.addConstrs((u[i, k] >= E_TW[i] for i in P for k in K), name="zehn-a-1")
+
+
+    model.addConstrs((u[i, k] <= L_TW[i] for i in P for k in K), name="zehn-b-1")
 
     # darf vor dem ETW ankommen
-    model.addConstrs((u[i, k] + dvar[i, k] >= E_TW[i] for i in D for k in K), name="zehn-a-2")
+    model.addConstrs((u[i, k] >= E_TW[i] for i in D for k in K), name="zehn-a-2")
     # darf nach dem LTW ankommen.
     model.addConstrs((u[i, k] - dvar[i, k] <= L_TW[i] for i in D for k in K), name="zehn-b-2")
-    # model.addConstrs((pvar[i, k] <= 10 for i in P for k in K), name="zehn-a-1")
+
+    #model.addConstrs((dvar[i, k] <= 10 for i in D for k in K), name="zehn-a-1")
     model.addConstrs((u[0, k] >= E_TW[0] for k in K), name="zehn-a-3")
     model.addConstrs((u[0, k] <= L_TW[0] for k in K), name="zehn-b-3")
 
@@ -534,7 +543,7 @@ def run_with_iterations(K_Fleetsize):
     model.addConstrs((x[2 * n + 1, i, k] == 0 for i in V for k in K), name="my-b")
     model.addConstrs((x[i, i, k] == 0 for i in V for k in K), name="my-b")
 
-    # model.Params.timeLimit = 15
+
 
     model.optimize()
 
@@ -596,11 +605,13 @@ def run_with_iterations(K_Fleetsize):
         print('Required capacity (used seats): ', used_seats)
         print('DELAY: ', DELAY)
 
-        print("\nn = ", n)
-        print("\ne_i = ", E_TW)
-        print("l_i = ", L_TW)
-
         timetable_sorted = indexmatch_time_route(ROUTE_IN_NODES, ROUTE_IN_TIMES)
+
+        data = {'e_i': E_TW, 'l_i': L_TW, 'timetable': timetable_sorted}
+        df = pd.DataFrame(data)
+        print(df)
+
+
 
         print("\n# Ferries = ", len(K))
 
@@ -641,9 +652,9 @@ def run_with_iterations(K_Fleetsize):
 
         df_table = pd.DataFrame(file1)
 
-        add_header = not os.path.exists(config.OPTIMIZATION_ITER)
+        add_header = not os.path.exists(config.EVALUATION_PAX)
 
-        df_table.to_csv(config.OPTIMIZATION_ITER, mode='a', header=add_header, index=False)
+        df_table.to_csv(config.EVALUATION_PAX, mode='a', header=add_header, index=False)
 
     else:
 
@@ -666,7 +677,7 @@ def run_with_iterations(K_Fleetsize):
 
 def main():
     K_Iter = [i for i in range(1, config.K_FLEET_SIZE+1)]
-    # optimizes wirh [1,2,3 ..., 10] ferries
+    # optimizes with [1,2,3 ..., 10] ferries
     for k_i in K_Iter:
         run_with_iterations(k_i)
 
@@ -674,6 +685,8 @@ def main():
 if __name__ == '__main__':
 
     K_Iter = [i for i in range(1, config.K_FLEET_SIZE+1)]
+    #K_Iter = [i for i in range(1, config.K_FLEET_SIZE + 1, 2)] # gibt jeden zweiten wert aus
+    #K_Iter = [i for i in range(1, config.K_FLEET_SIZE + 1) if i % 2 == 0]
     # optimizes wirh [1,2,3 ..., 10] ferries
     for k_i in K_Iter:
         run_with_iterations(k_i)

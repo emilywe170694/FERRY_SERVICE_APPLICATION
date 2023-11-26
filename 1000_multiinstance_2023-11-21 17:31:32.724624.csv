@@ -1,0 +1,7 @@
+,avg_time_savings_in_percent_operator,avg_time_savings_in_minutes_operator,avg_delay_in_minutes_operator,avg_time_savings_in_percent_passenger,avg_time_savings_in_minutes_passenger,avg_delay_in_minutes_passenger,avg_distance_traveled_operator,sum_distance_traveled_operator,avg_distance_traveled_passenger,sum_distance_traveled_passenger,distance_savings_in_percentage,distance_savings_in_meter
+1,-66.51,-13.0,13.37,-88.44,-18.1,18.63,8102.0,12153.0,10752.0,16128.0,60.31,3944.34
+2,-17.5,-3.5,5.2,-33.9,-6.7,8.03,4962.0,14886.0,6168.67,18506.0,60.31,3944.34
+4,14.22,3.63,0.0,21.98,5.3,0.0,1502.83,9017.0,2269.5,9078.0,60.31,3944.34
+6,13.79,3.5,0.0,19.16,4.5,0.47,813.11,7318.0,1466.44,13198.0,60.31,3944.34
+8,28.86,6.53,0.0,30.42,6.77,0.0,582.83,6994.0,744.92,8939.0,60.31,3944.34
+10,35.9,8.23,0.0,35.06,8.0,0.0,502.0,7530.0,496.0,4960.0,60.31,3944.34

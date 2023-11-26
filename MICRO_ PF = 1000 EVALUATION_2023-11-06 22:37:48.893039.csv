@@ -1,0 +1,13 @@
+,1,2,4,6,8,10
+avg_time_savings_in_percent_operator,-77.81,-6.29,8.84,12.39,15.35,20.79
+avg_time_savings_in_minutes_operator,-20.1,-1.5,2.4,3.5,4.2,5.4
+avg_delay_in_minutes_operator,20.0,1.5,0.0,0.0,0.0,0.0
+avg_time_savings_in_percent_passenger,-89.73,-4.61,7.06,8.52,13.09,18.65
+avg_time_savings_in_minutes_passenger,-21.0,-1.1,1.7,1.8,3.1,4.8
+avg_delay_in_minutes_passenger,20.2,1.5,0.0,0.0,0.0,0.0
+avg_distance_traveled_operator,8182.0,3692.0,1579.5,722.0,553.25,496.0
+sum_distance_traveled_operator,8182.0,7384.0,6318.0,4332.0,4426.0,4960.0
+avg_distance_traveled_passenger,9382.0,3692.0,2089.5,1202.0,735.75,496.0
+sum_distance_traveled_passenger,9382.0,7384.0,8358.0,7212.0,5886.0,4960.0
+distance_savings_in_percentage,48.14,48.14,48.14,48.14,48.14,48.14
+distance_savings_in_meter,3758.32,3758.32,3758.32,3758.32,3758.32,3758.32

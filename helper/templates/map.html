@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Ferry App</title>
+    <link rel="stylesheet" type="text/css" href="../static/ferry_app.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons" />
+    <script src="https://maps.googleapis.com/maps/api/js?key={{ gmaps_api }}"></script>
+
+</head>
+<body>
+<div class="yoyo" > FERRY SERVICE APPLICATION  </div>
+<div id="map" style="height: 100vh; width: 100%;"></div>
+</body>
+
+<script>
+    var customMapStyle = [
+        {
+            featureType: 'landscape',
+            elementType: 'all',
+            stylers: [
+                {hue: '#669cff'}, // Ändere die Farbe der Landschaft
+                {saturation: 30} // Erhöhe die Sättigung
+            ]
+        },
+        {
+            featureType: 'water',
+            elementType: 'all',
+            stylers: [
+                {hue: '#669cff'}, // Ändere die Farbe des Wassers
+                {saturation: 50} // Erhöhe die Sättigung
+            ]
+        },
+
+        {
+            featureType: 'poi',
+            elementType: 'labels',
+            stylers: [
+                {visibility: 'off'} // Setze die Sichtbarkeit der POI-Labels auf 'aus'
+            ]
+        },
+
+          {
+            featureType: 'road',
+            elementType: 'labels',
+            stylers: [
+                {visibility: 'off'} // Setze die Sichtbarkeit der POI-Labels auf 'aus'
+            ]
+        }
+
+
+    ];
+
+    // function Route() {
+    //
+    //         var start = new google.maps.LatLng(51.26320196573723,6.731211569423458);
+    //         var end = new google.maps.LatLng(51.23747965658745,6.7355765593294725);
+    //         var request = {
+    //             origin: start,
+    //             destination: end,
+    //             travelMode: google.maps.TravelMode.WALKING
+    //         };
+    //         directionsService.route(request, function (result, status) {
+    //             if (status == google.maps.DirectionsStatus.OK) {
+    //                 directionsDisplay.setDirections(result);
+    //             } else {
+    //                 alert("couldn't get directions:" + status);
+    //             }
+    //         });
+    //     }
+
+
+    function initMap() {
+        var directionsService = new google.maps.DirectionsService();
+        var directionsRenderer = new google.maps.DirectionsRenderer();
+        var map = new google.maps.Map(document.getElementById('map'), {
+            center: {lat: 51.22786415395434, lng: 6.772850463594631}, // Setzen Sie das Zentrum Ihrer Karte
+            zoom: 13,
+            mapTypeId: 'terrain',
+            styles: customMapStyle
+
+        });
+        // var request = {
+        //     origin: '51.26320196573723,6.731211569423458',
+        //     destination: '51.23747965658745,6.7355765593294725',
+        //     travelMode: 'DRIVING' // Sie können auch 'WALKING', 'BICYCLING' usw. verwenden
+        // };
+        //
+        // directionsService.route(request, function (response, status) {
+        //     if (status === 'OK') {
+        //         directionsRenderer.setDirections(response);
+        //     } else {
+        //         window.alert('Fehler bei der Routenberechnung: ' + status);
+        //     }
+        // });
+        // directionsRenderer.setMap(map);
+
+
+
+        function createNumberedHouse(number, fillColor, textColor) {
+            return {
+                path: 'M 0,-16 L 8,0 L 16,-16 L 16,-32 L 0,-48 L -16,-32 L -16,-16 Z',
+                fillColor: fillColor,
+                fillOpacity: 1,
+                strokeColor: 'white',
+                strokeWeight: 0.5,
+                scale: 1.2, // Größe des Symbols
+                labelOrigin: new google.maps.Point(0, 0), // Ankerpunkt für den Text
+                labelClass: "marker-label", // CSS-Klasse für den Text
+                label: {
+                    text: number.toString(),
+                    color: textColor
+                }
+            };
+        }
+
+        function getRandomHexColor() {
+           return '#' + Math.floor(Math.random()*16777215).toString(16);
+        }
+
+
+        function createNumberedCircle(number, fillColor, textColor) {
+            return {
+                path: `M 0,0 m -8,0 a 8,8 0 1,0 16,0 a 8,8 0 1,0 -16,0`,
+                fillColor: fillColor,
+                fillOpacity: 1,
+                strokeColor: 'white',
+                strokeWeight: 0.5,
+                scale: 1.5, // Größe des Symbols
+                labelOrigin: new google.maps.Point(0, 0), // Ankerpunkt für den Text
+                labelClass: "marker-label", // CSS-Klasse für den Text
+                label: {
+                    text: number.toString(),
+                    color: textColor
+                }
+            };
+        }
+
+
+
+            // *****styling****
+            var markerColor = 'blue'; // Farbe des Markers
+            var markerImage = {
+                url: `http://chart.googleapis.com/chart?chst=d_map_pin_letter&chld=%E2%80%A2|${markerColor}`,
+                size: new google.maps.Size(21, 34), // Größe des Symbols anpassen
+                origin: new google.maps.Point(0, 0),
+                anchor: new google.maps.Point(10, 34) // Ankerpunkt für das Symbol anpassen
+            };
+
+
+
+
+            // *****ende styling****
+
+            var station_coordinates = {{ station_coordinates | tojson | safe }};
+            var request_start = {{ request_start | tojson | safe }};
+            var request_dest = {{ request_dest | tojson | safe }};
+            var request_pickup = {{ request_pickup | tojson | safe }};
+            var request_dropoff = {{ request_dropoff | tojson | safe }};
+
+
+
+            // Pfad zum PNG-Bild, das Sie als Marker-Symbol verwenden möchten
+
+
+            var customIconHouse = {
+                url: '/static/heimatform.png',
+                scaledSize: new google.maps.Size(20, 20),
+            };
+
+
+            var customIconDest = {
+                url: '/static/destinations.png',
+                scaledSize: new google.maps.Size(30, 30)
+            };
+
+            for (var i = 0; i < request_start.length; i++) {
+                var marker = new google.maps.Marker({
+                    position: new google.maps.LatLng(request_start[i][0], request_start[i][1]),
+                    label: {
+                        text:i.toString(),
+                        color: 'white'
+                    },
+                    map: map,
+                    icon: createNumberedCircle(i + 1, 'gray', 'red'),
+                    label: {
+                        text: (i).toString(), // Label content
+                        color: 'white', // Change the label text color
+                        fontSize: '14px', // Change the label text size
+                         // Change the label text weight
+                        textAlign: 'center', // Align the text center
+                        textBaseline: 'middle' // Align the text vertically center
+                    },
+
+                });
+            }
+
+
+            for (var i = 0; i < request_dest.length; i++) {
+
+                var marker = new google.maps.Marker({
+                    position: new google.maps.LatLng(request_dest[i][0], request_dest[i][1]),
+                    map: map,
+                    icon: createNumberedCircle(i + 1, 'black', 'red'),
+                    label: {
+                        text: (i).toString(), // Label content
+                        color: 'white', // Change the label text color
+                        fontSize: '14px', // Change the label text size
+                         // Change the label text weight
+                        textAlign: 'center', // Align the text center
+                        textBaseline: 'middle' // Align the text vertically center
+                    },
+                });
+
+            }
+
+            // for (var i = 0; i < request_dest.length; i++) {
+            //     var destLatLng = new google.maps.LatLng(request_dest[i][0], request_dest[i][1]);
+            //     var dropoffLatLng = new google.maps.LatLng(request_dropoff[i][0], request_dropoff[i][1]);
+            //
+            //     var startLatLon = new google.maps.LatLng(request_start[i][0], request_start[i][1]);
+            //     var pickupLatLon = new google.maps.LatLng(request_pickup[i][0], request_pickup[i][1]);
+            //     const randomColor = getRandomHexColor();
+            //
+            //     var polyline_dropoff_dest = new google.maps.Polyline({
+            //         path: [destLatLng, dropoffLatLng],
+            //         strokeColor: randomColor, // Farbe der Linie
+            //         strokeOpacity: 1, // Deckkraft der Linie
+            //         strokeWeight: 2 // Breite der Linie
+            //     });
+            //
+            //     var polyline_start_pickup = new google.maps.Polyline({
+            //         path: [startLatLon, pickupLatLon],
+            //         strokeColor: randomColor, // Farbe der Linie
+            //         strokeOpacity: 1, // Deckkraft der Linie
+            //         strokeWeight: 2 // Breite der Linie
+            //     });
+            //
+            //     polyline_dropoff_dest.setMap(map); // Linie zur Karte hinzufügen
+            //     polyline_start_pickup.setMap(map);
+            // }
+
+            for (var i = 0; i < request_pickup.length; i++) {
+                var marker = new google.maps.Marker({
+                    position: new google.maps.LatLng(request_pickup[i][0], request_pickup[i][1]),
+                    map: map,
+                      icon: {
+                        path: google.maps.SymbolPath.CIRCLE,
+                        scale: 4, // Adjust the scale to change the size of the circle
+                        fillColor: 'red', // Change 'red' to the desired color
+                        fillOpacity: 1, // Adjust the opacity as needed
+                        strokeColor: 'black', // Change 'black' to the desired border color
+                        strokeWeight: 1 // Adjust the border width as needed
+                    }
+                });
+            }
+
+            for (var i = 0; i < station_coordinates.length; i++) {
+                var marker2 = new google.maps.Marker({
+                    position: new google.maps.LatLng(station_coordinates[i][0], station_coordinates[i][1]),
+                    map: map,
+                    icon: createNumberedCircle(i + 1, 'blue', 'red'),
+                    label: {
+                        text: (i).toString(), // Label content
+                        color: 'white', // Change the label text color
+                        fontSize: '14px', // Change the label text size
+                         // Change the label text weight
+                        textAlign: 'center', // Align the text center
+                        textBaseline: 'middle' // Align the text vertically center
+                    },
+                });
+            }
+        }
+
+    initMap();
+    Route();
+    </script>
+</body>
+</html>
